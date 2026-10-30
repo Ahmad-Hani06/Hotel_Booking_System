@@ -145,12 +145,16 @@ namespace DataAccessLayer.DataAccess
             return true;
         }
 
-        public async Task<bool> IsReservationExistsById(int reservationId)
+        public async Task<bool> IsReservationExistsByIdAsync(int reservationId)
         {
             return await _context.Reservations.AsNoTracking().AnyAsync(r => r.ReservationId == reservationId);
         }
 
-
+        //public async Task<decimal> GetReservationTotalAmountByIdAsync(int reservationId)
+        //{
+        //    return await _context.Reservations.Where(r => r.ReservationId == reservationId).
+        //        Select(r => (decimal?)r.TotalAmount ?? 0).FirstOrDefaultAsync();
+        //}
 
     }
 }

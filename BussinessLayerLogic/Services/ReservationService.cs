@@ -15,15 +15,19 @@ namespace BussinessLayerLogic.Services
         private readonly RoomData _roomData;
         private readonly GuestData _guestData;
         private readonly PersonData _personData;
+        private readonly ReservationChargeData _reservationChargeData;
+        private readonly PaymentData _paymentData;
         public ReservationService(ReservationData reservationData, RoomData roomData, 
             GuestData guestData, PersonData personData, 
-            ReservationRoomData reservationRoomData)
+            ReservationRoomData reservationRoomData, ReservationChargeData reservationChargeData, PaymentData paymentData)
         {
             _reservationData = reservationData;
             _roomData = roomData;
             _guestData = guestData;
             _personData = personData;
             _reservationRoomData = reservationRoomData;
+            _reservationChargeData = reservationChargeData;
+            _paymentData = paymentData;
         }
 
         private bool IsInvalidReservationDates(DateOnly checkIn, DateOnly checkOut)
@@ -228,7 +232,7 @@ namespace BussinessLayerLogic.Services
                     reservationDto.RoomIds, reservationDto.CreatedByUserId);
         }
 
-        public async Task<decimal> CalculateTotalAmountAsync(
+        private async Task<decimal> CalculateTotalAmountAsync(
     List<int> roomIds,
     DateOnly checkInDate,
     DateOnly checkOutDate)
@@ -274,8 +278,18 @@ namespace BussinessLayerLogic.Services
                 return false;
 
             if (reservation.ReservationStatus != "CheckedIn")
-                throw new InvalidOperationException(
-                    "Only CheckedIn reservations can be checked out.");
+                throw new InvalidOperationException("Only CheckedIn reservations can be checked out.");
+
+            decimal totalAmount = reservation.TotalAmount;
+
+            totalAmount += await _reservationChargeData.GetReservationChargeAmountByReservationIdAsync(reservationId);
+
+            // Payments
+            decimal paymentAmount = await _paymentData.GetTotalPaymentsByReservationIdAsync(reservationId);
+
+            decimal pendingBalance = totalAmount - paymentAmount;
+            if (paymentAmount < totalAmount)
+                throw new InvalidOperationException($"Cannot check out. Pending balance: {pendingBalance:C}. Please settle the payment first.");
 
             return await _reservationData.CheckOutReservationAsync(reservationId);
         }

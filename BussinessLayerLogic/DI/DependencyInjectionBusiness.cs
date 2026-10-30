@@ -18,6 +18,9 @@ public static class DependencyInjectionBusiness
         services.AddScoped<GuestService>();
         services.AddScoped<ReservationData>();
         services.AddScoped<ReservationService>();
+        services.AddScoped<ReservationChargeData>();
+        //services.AddScoped<ReservationCharge>();
+        services.AddScoped<PaymentData>();
 
         return services;
     }
