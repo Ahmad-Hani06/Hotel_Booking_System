@@ -245,9 +245,6 @@ namespace BussinessLayerLogic.Services
 
         public async Task<bool> CheckInReservationAsync(int reservationId)
         {
-            bool isReservationExists = await _reservationData.IsReservationExistsById(reservationId);
-            if (!isReservationExists)
-                return false;
 
             var reservation = await _reservationData.GetReservationDetailsByReservationIdAsync(reservationId);
             if (reservation == null)
@@ -268,5 +265,20 @@ namespace BussinessLayerLogic.Services
 
             return await _reservationData.CheckInReservationAsync(reservationId);
         }
+
+        public async Task<bool> CheckOutReservationAsync(int reservationId)
+        {
+
+            var reservation = await _reservationData.GetReservationDetailsByReservationIdAsync(reservationId);
+            if (reservation == null)
+                return false;
+
+            if (reservation.ReservationStatus != "CheckedIn")
+                throw new InvalidOperationException(
+                    "Only CheckedIn reservations can be checked out.");
+
+            return await _reservationData.CheckOutReservationAsync(reservationId);
+        }
+
     }
 }

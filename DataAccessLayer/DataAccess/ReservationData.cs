@@ -132,10 +132,24 @@ namespace DataAccessLayer.DataAccess
             return true;
         }
 
+        public async Task<bool> CheckOutReservationAsync(int reservationId)
+        {
+            var reservation = await _context.Reservations.Where(r => r.ReservationId == reservationId && (r.ReservationStatus == "CheckedIn")).FirstOrDefaultAsync();
+            if (reservation == null)
+                return false;
+
+            reservation.ReservationStatus = "CheckedOut";
+
+            await _context.SaveChangesAsync();
+
+            return true;
+        }
+
         public async Task<bool> IsReservationExistsById(int reservationId)
         {
             return await _context.Reservations.AsNoTracking().AnyAsync(r => r.ReservationId == reservationId);
         }
+
 
 
     }

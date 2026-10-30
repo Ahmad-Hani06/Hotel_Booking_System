@@ -133,5 +133,28 @@ namespace Hotel_Booking_System.Controllers
             }
         }
 
+        [HttpPost("{reservationId:int}/check-out")]
+
+        public async Task<IActionResult> CheckOutReservation(int reservationId)
+        {
+            if (reservationId <= 0)
+                return BadRequest("Invalid reservation ID.");
+
+            try
+            {
+                bool isCheckedOut = await _reservationService.CheckOutReservationAsync(reservationId);
+
+                if (!isCheckedOut)
+                    return NotFound("Reservation not found.");
+
+                return Ok("Reservation checked out successfully.");
+            }
+            catch (InvalidOperationException ex)
+            {
+                return Conflict(ex.Message);
+            }
+        }
+
+
     }
 }
